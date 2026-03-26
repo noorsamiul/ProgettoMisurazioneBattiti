@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <span class="navbar-brand">La Mia App Flask</span>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-sm">Logout</a>
+        </div>
+    </nav>
+    <div class="container text-center">
+        <div class="p-5 bg-white border rounded shadow-sm">
+            <h1 class="display-4 text-primary">Bentornato!</h1>
+            <p class="lead">Il login è stato effettuato con successo.</p>
+        </div>
+    </div>
+</body>
+</html>
+
