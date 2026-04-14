@@ -1,45 +1,108 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrazione</title>
-    <!-- CSS di Bootstrap via CDN -->
-    <link href="https://cdn.jsdelivr.net" rel="stylesheet">
+    <title>Registrazione — Battiti Cardiaci</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #0d0d0f; --surface: #16161a; --border: #2a2a30;
+            --accent: #c8a96e; --accent-dim: rgba(200,169,110,0.15);
+            --text: #e8e6e1; --muted: #7a7870; --error: #e05c5c; --success: #5cb870;
+        }
+        body {
+            background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            padding: 2rem;
+            background-image: radial-gradient(ellipse 80% 60% at 80% 10%, rgba(200,169,110,0.06) 0%, transparent 60%),
+                              radial-gradient(ellipse 60% 80% at 20% 90%, rgba(100,80,160,0.05) 0%, transparent 60%);
+        }
+        .card {
+            width: 100%; max-width: 480px; background: var(--surface);
+            border: 1px solid var(--border); border-radius: 2px; padding: 3rem 2.5rem;
+            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        .logo { font-family: 'Playfair Display', serif; font-size: 1.1rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent); text-align: center; margin-bottom: 2.5rem; }
+        h1 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 400; margin-bottom: 0.4rem; }
+        .subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; font-weight: 300; }
+        .divider { width: 40px; height: 1px; background: var(--accent); margin-bottom: 2rem; }
+        .alert-error { background: rgba(224,92,92,0.1); border: 1px solid rgba(224,92,92,0.3); border-radius: 2px; padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--error); margin-bottom: 1.5rem; }
+        .alert-success { background: rgba(92,184,112,0.1); border: 1px solid rgba(92,184,112,0.3); border-radius: 2px; padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--success); margin-bottom: 1.5rem; }
+        .alert-success a { color: var(--accent); text-decoration: none; font-weight: 500; }
+        .field { margin-bottom: 1.2rem; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        label { display: block; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; font-weight: 500; }
+        input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 2px; padding: 0.8rem 1rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; transition: border-color 0.2s, background 0.2s; outline: none; }
+        input:focus { border-color: var(--accent); background: var(--accent-dim); }
+        .hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.3rem; }
+        button[type="submit"] { width: 100%; background: var(--accent); color: #0d0d0f; border: none; border-radius: 2px; padding: 0.9rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; margin-top: 0.5rem; transition: opacity 0.2s; }
+        button[type="submit"]:hover { opacity: 0.85; }
+        .footer-link { text-align: center; margin-top: 2rem; font-size: 0.82rem; color: var(--muted); }
+        .footer-link a { color: var(--accent); text-decoration: none; font-weight: 500; }
+        .footer-link a:hover { text-decoration: underline; }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-4">
-                <div class="card shadow">
-                    <div class="card-body">
-                        <h2 class="card-title text-center mb-4">Crea Account</h2>
-                        
-                        {% with messages = get_flashed_messages() %}
-                          {% if messages %}
-                            {% for message in messages %}
-                              <div class="alert alert-danger">{{ message }}</div>
-                            {% endfor %}
-                          {% endif %}
-                        {% endwith %}
+<body>
+    <div class="card">
+        <div class="logo">Battiti Cardiaci</div>
+        <h1>Crea account</h1>
+        <p class="subtitle">Unisciti a noi oggi</p>
+        <div class="divider"></div>
 
-                        <form action="{{ url_for('register') }}" method="POST">
-                            <div class="mb-3">
-                                <label class="form-label">Username</label>
-                                <input type="text" name="username" class="form-control" placeholder="Inserisci username" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Password</label>
-                                <input type="password" name="password" class="form-control" placeholder="Inserisci password" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Registrati</button>
-                        </form>
-                        <hr>
-                        <p class="text-center">Hai già un account? <a href="{{ url_for('login') }}">Accedi</a></p>
-                    </div>
+
+        {% if error %}
+            <div class="alert-error">{{ error }}</div>
+        {% endif %}
+        {% if success %}
+            <div class="alert-success">{{ success }} — <a href="{{ url_for('login') }}">Accedi ora →</a></div>
+        {% endif %}
+
+
+        {% if not success %}
+        <form method="POST">
+            <div class="row">
+                <div class="field">
+                    <label for="nome">Nome</label>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+                <div class="field">
+                    <label for="cognome">Cognome</label>
+                    <input type="text" id="cognome" name="cognome" required>
                 </div>
             </div>
-        </div>
+            <div class="row">
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" autocomplete="username" required minlength="3">
+                    <p class="hint">Minimo 3 caratteri</p>
+                </div>
+                <div class="field">
+                    <label for="eta">Età</label>
+                    <input type="number" id="eta" name="eta" min="1" max="120" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                    <p class="hint">Min. 6 caratteri</p>
+                </div>
+                <div class="field">
+                    <label for="confirm">Conferma password</label>
+                    <input type="password" id="confirm" name="confirm" required>
+                </div>
+            </div>
+            <button type="submit">Registrati</button>
+        </form>
+        {% endif %}
+
+
+        <p class="footer-link">Hai già un account? <a href="{{ url_for('login') }}">Accedi</a></p>
     </div>
 </body>
-</html>
+</html> 
+

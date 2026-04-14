@@ -1,0 +1,576 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home — Battiti Cardiaci</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #0d0d0f;
+            --surface: #16161a;
+            --surface2: #1e1e24;
+            --border: #2a2a30;
+            --accent: #c8a96e;
+            --accent-dim: rgba(200,169,110,0.12);
+            --text: #e8e6e1;
+            --muted: #7a7870;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            background-image:
+                radial-gradient(ellipse 100% 50% at 50% 0%, rgba(200,169,110,0.07) 0%, transparent 60%);
+        }
+
+
+        /* NAV */
+        nav {
+            border-bottom: 1px solid var(--border);
+            padding: 0 2.5rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(13,13,15,0.8);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+        .nav-links { display: flex; align-items: center; gap: 1.5rem; }
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.82rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+        .nav-links a.logout {
+            color: var(--accent);
+            border: 1px solid var(--border);
+            padding: 0.4rem 1rem;
+            border-radius: 2px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .nav-links a.logout:hover { background: var(--accent-dim); color: var(--accent); }
+
+
+        /* HERO */
+        .hero {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 5rem 2rem 3rem;
+            text-align: center;
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .greeting {
+            font-size: 0.8rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 1.2rem;
+        }
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.4rem, 6vw, 4rem);
+            font-weight: 400;
+            line-height: 1.15;
+            margin-bottom: 1.2rem;
+        }
+        .hero h1 em { font-style: italic; color: var(--accent); }
+        .hero p {
+            color: var(--muted);
+            font-size: 1rem;
+            font-weight: 300;
+            max-width: 480px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.7;
+        }
+        .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .btn-primary {
+            background: var(--accent);
+            color: #0d0d0f;
+            text-decoration: none;
+            padding: 0.8rem 2rem;
+            border-radius: 2px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: opacity 0.2s;
+        }
+
+
+        .nav-links a:hover, .nav-links a.active { color: var(--text); }
+        .nav-links a.logout {
+            color: var(--accent);
+            border: 1px solid var(--border);
+            padding: 0.4rem 1rem;
+            border-radius: 2px;
+            transition: background 0.2s;
+        }
+
+
+        .btn-primary:hover { opacity: 0.85; }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text);
+            text-decoration: none;
+            padding: 0.8rem 2rem;
+            border-radius: 2px;
+            border: 1px solid var(--border);
+            font-size: 0.82rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .btn-ghost:hover { border-color: var(--accent); background: var(--accent-dim); }
+        /* LAYOUT */
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            padding: 4rem 2rem;
+        }
+
+
+        /* BOX MISURAZIONE */
+        .measure-box {
+            max-width: 700px;
+            margin: 0 auto;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 2.5rem;
+            border-radius: 2px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+
+
+        /* DISPLAY BPM */
+        .bpm-display {
+            background: rgba(200,169,110,0.08);
+            border: 1px solid rgba(200,169,110,0.25);
+            color: var(--accent);
+            padding: 2rem;
+            text-align: center;
+            font-size: 1.6rem;
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 0.05em;
+            margin-bottom: 1.5rem;
+            border-radius: 2px;
+        }
+
+
+        /* CONTROLLI */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: center;
+        }
+
+
+        /* TIMER */
+        .timer {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.6rem 1.2rem;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+        }
+
+
+        /* BOTTONI */
+        .btn {
+            background: var(--accent);
+            border: none;
+            padding: 0.7rem 1.3rem;
+            cursor: pointer;
+            color: #0d0d0f;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+
+
+        /* =========================
+        POPUP SALUTE BPM
+        ========================= */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.65);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+
+        .popup {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            width: 350px;
+            text-align: center;
+            border-radius: 6px;
+            animation: fadeUp 0.3s ease;
+        }
+
+
+        .popup.green { border-color: #2ecc71; color: #2ecc71; }
+        .popup.orange { border-color: #f1c40f; color: #f1c40f; }
+        .popup.red { border-color: #e74c3c; color: #e74c3c; }
+
+
+        .popup button {
+            margin-top: 1rem;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            background: var(--accent);
+            color: #000;
+            cursor: pointer;
+        }
+
+
+
+
+
+
+        .layout {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+
+        /* sinistra e destra */
+        .left, .right {
+            flex: 1;
+        }
+
+
+        /* card risultato */
+        .result-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 2rem;
+            min-height: 250px;
+        }
+
+
+        .result-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+
+        .result-text {
+            font-size: 0.95rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+
+        .result-status {
+            margin-top: 1rem;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+        }
+
+
+
+
+
+
+
+
+        /* CARDS */
+        .cards-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 2rem 5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.2rem;
+            animation: fadeUp 0.9s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 1.8rem;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .card-icon {
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+        }
+        .card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+        .card p { color: var(--muted); font-size: 0.85rem; line-height: 1.6; font-weight: 300; }
+
+
+        /* USER INFO */
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: var(--accent-dim);
+            border: 1px solid rgba(200,169,110,0.25);
+            border-radius: 2px;
+            padding: 0.5rem 1rem;
+            font-size: 0.82rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+        }
+        .user-badge span { color: var(--muted); }
+
+
+
+
+
+
+
+
+
+
+
+
+       
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-logo">Battiti Cardiaci</div>
+        <div class="nav-links">
+            <a href="{{ url_for('homepage') }}" class="active">Home</a>
+            <a href="{{ url_for('cronologia') }}">Cronologia</a>
+            <a href="{{ url_for('logout') }}" class="logout">Esci</a>
+            
+            <span class="user-display">{{ username }}</span>
+        </div>
+    </nav>
+
+
+    <div class="hero">
+        <div class="user-badge">
+            ✦ <span>Connesso come</span> {{ username }}
+        </div>
+        <h1>Ciao, <em>{{ username }}</em>.<br>Benvenuto nel sito di Battiti Cardiaci.</h1>
+        <p>Gestisci il tuo profilo, esplora le funzionalità e tieni traccia di tutte le tue attività in un unico posto.</p>
+
+
+    </div>
+
+
+</div>
+
+
+
+
+<script>
+let interval = null;
+let time = 0;
+let readings = [];
+
+
+function start() {
+    if (interval) return;
+
+
+    readings = [];
+    time = 0;
+
+
+    interval = setInterval(() => {
+        time++;
+
+
+        document.getElementById("timer").innerText = time + "s";
+
+
+        let bpm = Math.floor(Math.random() * 40) + 60;
+        readings.push(bpm);
+
+
+        document.getElementById("bpm").innerText = bpm + " BPM";
+
+
+        // 🔥 STOP AUTOMATICO A 20 SECONDI
+        if (time >= 20) {
+            stop();
+        }
+
+
+    }, 1000);
+}
+
+
+function stop() {
+    clearInterval(interval);
+    interval = null;
+
+
+    if (readings.length === 0) return;
+
+
+    const max  = Math.max(...readings);
+    const min  = Math.min(...readings);
+    const medi = Math.round(readings.reduce((a,b) => a+b, 0) / readings.length);
+
+
+    document.getElementById("input_massimi").value = max;
+    document.getElementById("input_minimi").value  = min;
+    document.getElementById("input_medi").value    = medi;
+
+
+    document.getElementById("bpm").innerText =
+        `Max: ${max} | Med: ${medi} | Min: ${min}`;
+
+
+    checkBPM(max, medi, min);
+}
+
+
+/* =========================
+   LOGICA SALUTE
+========================= */
+function checkBPM(max, med, min) {
+
+
+    let text = "";
+    let status = "";
+
+
+    if (med >= 60 && med <= 100 && max < 100) {
+        text = "Il tuo battito è nella norma. Il cuore sta funzionando correttamente.";
+        status = "🟢 NORMALE";
+    }
+    else if ((med >= 50 && med < 60) || (med > 100 && med <= 120)) {
+        text = "Il tuo battito è leggermente irregolare. Monitora la situazione.";
+        status = "🟡 ATTENZIONE";
+    }
+    else {
+        text = "Il tuo battito è fuori norma. È consigliato monitorare o consultare un medico.";
+        status = "🔴 CRITICO";
+    }
+
+
+    document.getElementById("resultText").innerText = text;
+    document.getElementById("resultStatus").innerText = status;
+}
+
+
+</script>
+
+
+<div class="layout">
+
+
+    <!-- SINISTRA: MISURAZIONE -->
+    <div class="left">
+
+
+        <form method="POST" action="{{ url_for('homepage') }}">
+            <div class="measure-box">
+
+
+                <div id="bpm" class="bpm-display">
+                    --- BPM
+                </div>
+
+
+                <input type="hidden" id="input_medi" name="bpm_medi">
+                <input type="hidden" id="input_massimi" name="bpm_massimi">
+                <input type="hidden" id="input_minimi" name="bpm_minimi">
+
+
+                <div class="controls">
+                    <div id="timer" class="timer">0s</div>
+
+
+                    <button type="button" class="btn" onclick="start()">Avvio</button>
+                    <button type="button" class="btn" onclick="stop()">Stop</button>
+                    <button type="submit" class="btn">Salva</button>
+                </div>
+
+
+            </div>
+        </form>
+
+
+    </div>
+
+
+    <!-- DESTRA: RISULTATO -->
+    <div class="right">
+
+
+        <div class="result-card">
+
+
+            <div class="result-title">Stato del tuo battito</div>
+
+
+            <div id="resultText" class="result-text">
+                Avvia una misurazione per vedere il risultato.
+            </div>
+
+
+            <div id="resultStatus" class="result-status"></div>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+   
+</body>
+</html> 
+
+

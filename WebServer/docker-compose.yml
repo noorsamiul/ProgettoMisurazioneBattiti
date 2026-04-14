@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16
+    container_name: battiti_db
+    restart: always
+    environment:
+      POSTGRES_DB: battiti
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d battiti"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    container_name: battiti_web
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://admin:secret@db:5432/battiti
+    ports:
+      - "5000:5000"
+
+volumes:
+  pgdata:
