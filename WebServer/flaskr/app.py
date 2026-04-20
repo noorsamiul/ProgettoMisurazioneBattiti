@@ -1,5 +1,6 @@
+# app.py
 import os
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, g
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
@@ -19,7 +20,6 @@ app.secret_key = 'chiave_segreta_cambia_in_produzione'
 
 
 
-
 # region DATABASE
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
@@ -29,7 +29,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-
+app.app_context().push()
 
 
 # region MODELLI
@@ -77,7 +77,7 @@ def get_utente():
 def index():
     if 'username' in session:
         return redirect(url_for('homepage'))
-    return redirect(url_for('login'))
+    return redirect(url_for('auth.login'))
 
 
 
@@ -85,7 +85,7 @@ def index():
 @login_required
 def homepage():
     if 'username' not in session:
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login'))
 
     utente = get_utente()
     if not utente:
@@ -125,7 +125,7 @@ def homepage():
 @login_required
 def cronologia():
     if 'username' not in session:
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login'))
 
     utente = get_utente()
     if not utente:
@@ -166,6 +166,9 @@ def delete_misurazione(id_misurazione):
 
     return redirect(url_for('cronologia'))
 
+from auth import bp as auth_bp
+app.register_blueprint(auth_bp)
+
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

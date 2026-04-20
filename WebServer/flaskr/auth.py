@@ -1,13 +1,19 @@
-from flask import Blueprint, g, redirect, render_template, request ,session as br_sesion, url_for
-from sqlalchemy import SQLAlchemy
-import hashlib
-import db.models as models
+# auth.py
+from flask import Blueprint, g, redirect, render_template, request ,session, url_for
+from werkzeug.security import generate_password_hash, check_password_hash
+# from sqlalchemy import SQLAlchemy
+# from app import Utente, db
+from datetime import datetime
+# import hashlib
+# import db.models as models
+# from flask_sqlalchemy import SQLAlchemy
 
 bp=Blueprint("auth", __name__, url_prefix="/auth")
 
 # region LOGIN
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
+    from app import Utente
     if 'username' in session:
         return redirect(url_for('homepage'))
 
@@ -28,8 +34,9 @@ def login():
     return render_template('auth/login.html', error=error)
 
 #region REGISTER
-@bp.route('/registrazione', methods=['GET', 'POST'])
-def registrazione():
+@bp.route('/register', methods=['GET', 'POST'])
+def register():
+    from app import Utente, db
     if 'username' in session:
         return redirect(url_for('homepage'))
 
@@ -75,12 +82,12 @@ def registrazione():
             db.session.add(nuovo)
             db.session.commit()
 
-            success = "Registrazione completata!"
+            success = "register completata!"
 
-    return render_template('auth/registrazione.html', error=error, success=success)
+    return render_template('auth/register.html', error=error, success=success)
 
 # region LOGOUT
 @bp.route('/logout')
 def logout():
     session.pop('username', None)
-    return redirect(url_for('login'))
+    return redirect(url_for('auth.login'))
