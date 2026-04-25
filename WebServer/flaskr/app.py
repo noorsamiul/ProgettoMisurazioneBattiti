@@ -1,10 +1,9 @@
-# app.py
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, g
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from _common import *
+from _common import login_required
 
 FLASKR_DIR = os.path.dirname(os.path.abspath(__file__))
 WEBSERVER  = os.path.dirname(FLASKR_DIR)
@@ -18,9 +17,8 @@ app = Flask(
 
 app.secret_key = 'chiave_segreta_cambia_in_produzione'
 
-
-
 # region DATABASE
+
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
     'postgresql://admin:secret@localhost:5432/battiti'
@@ -31,9 +29,7 @@ db = SQLAlchemy(app)
 
 app.app_context().push()
 
-
 # region MODELLI
-
 class Utente(db.Model):
     __tablename__ = 'utente'
 
@@ -63,13 +59,22 @@ class Misurazione(db.Model):
         nullable=False
     )
 
-
 with app.app_context():
     db.create_all()
 
+# region BEFORE REQUEST (FONDAMENTALE)
+@app.before_request
+def load_logged_in_user():
+    username = session.get('username')
+
+    if username is None:
+        g.user = None
+    else:
+        g.user = Utente.query.filter_by(username=username).first()
+
 # region HELPERS
 def get_utente():
-    return Utente.query.filter_by(username=session.get('username')).first()
+    return g.user
 
 # region ROUTES
 
@@ -80,17 +85,14 @@ def index():
     return redirect(url_for('auth.login'))
 
 
-
 @app.route('/homepage', methods=['GET', 'POST'])
 @login_required
 def homepage():
-    if 'username' not in session:
-        return redirect(url_for('auth.login'))
 
-    utente = get_utente()
-    if not utente:
-        session.pop('username', None)
-        return redirect(url_for('login'))
+    utente = g.user
+
+    if utente is None:
+        return redirect(url_for('auth.login'))
 
     if request.method == 'POST':
         nuova = Misurazione(
@@ -124,13 +126,11 @@ def homepage():
 @app.route('/cronologia')
 @login_required
 def cronologia():
-    if 'username' not in session:
-        return redirect(url_for('auth.login'))
 
-    utente = get_utente()
-    if not utente:
-        session.pop('username', None)
-        return redirect(url_for('login'))
+    utente = g.user
+
+    if utente is None:
+        return redirect(url_for('auth.login'))
 
     misurazioni = Misurazione.query.filter_by(
         id_utente=utente.id_utente
@@ -143,17 +143,16 @@ def cronologia():
     )
 
 
-# region DELETE MISURAZIONE
-
 @app.route('/delete_misurazione/<int:id_misurazione>', methods=['POST'])
-def delete_misurazione(id_misurazione):
-    if 'username' not in session:
-        return redirect(url_for('login'))
+def delete_misurazione():
 
-    utente = get_utente()
-    if not utente:
-        session.pop('username', None)
-        return redirect(url_for('login'))
+    if 'username' not in session:
+        return redirect(url_for('auth.login'))
+
+    utente = g.user
+
+    if utente is None:
+        return redirect(url_for('auth.login'))
 
     misurazione = Misurazione.query.filter_by(
         id_misurazione=id_misurazione,
@@ -166,9 +165,11 @@ def delete_misurazione(id_misurazione):
 
     return redirect(url_for('cronologia'))
 
+
+# region BLUEPRINT AUTH
 from auth import bp as auth_bp
 app.register_blueprint(auth_bp)
 
-
+# region RUN
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

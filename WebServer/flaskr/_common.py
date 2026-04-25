@@ -3,12 +3,9 @@ from flask import redirect, g, url_for
 from functools import wraps
 
 def login_required(func):
-    @wraps(func)  #mantiene il nome, il docstring e l’endpoint della funzione originale. Senza questo, Flask registra wrapper invece di films, e non funziona il redirect.
+    @wraps(func)
     def wrapper(*args, **kwargs):
-        out = None
-        if g.user:
-            out = func(*args, **kwargs)
-        else:
-            out = redirect(url_for('auth.login'))
-        return out
+        if getattr(g, "user", None) is None:
+            return redirect(url_for('auth.login'))
+        return func(*args, **kwargs)
     return wrapper
