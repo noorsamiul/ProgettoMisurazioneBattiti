@@ -68,7 +68,6 @@
         </div>
     </div>
 
-
 </div>
 
 
@@ -77,25 +76,19 @@ let interval = null;
 let time = 0;
 let readings = [];
 
-
 function start() {
     if (interval) return;
-
 
     readings = [];
     time = 0;
 
-
     interval = setInterval(() => {
         time++;
 
-
         document.getElementById("timer").innerText = time + "s";
-
 
         let bpm = Math.floor(Math.random() * 40) + 60;
         readings.push(bpm);
-
 
         document.getElementById("bpm").innerText = bpm + " BPM";
 
@@ -106,28 +99,22 @@ function start() {
     }, 1000);
 }
 
-
 function stop() {
     clearInterval(interval);
     interval = null;
 
-
     if (readings.length === 0) return;
-
 
     const max  = Math.max(...readings);
     const min  = Math.min(...readings);
     const medi = Math.round(readings.reduce((a,b) => a+b, 0) / readings.length);
 
-
     document.getElementById("input_massimi").value = max;
     document.getElementById("input_minimi").value  = min;
     document.getElementById("input_medi").value    = medi;
 
-
     document.getElementById("bpm").innerText =
         `Max: ${max} | Med: ${medi} | Min: ${min}`;
-
 
     checkBPM(max, medi, min);
 }
@@ -136,7 +123,6 @@ function stop() {
 function checkBPM(max, med, min) {
     let text = "";
     let status = "";
-
 
     if (med >= 60 && med <= 100 && max < 100) {
         text = "Il tuo battito è nella norma.";
@@ -150,7 +136,6 @@ function checkBPM(max, med, min) {
         text = "Battito fuori norma.";
         status = "🔴 CRITICO";
     }
-
 
     document.getElementById("resultText").innerText = text;
     document.getElementById("resultStatus").innerText = status;
