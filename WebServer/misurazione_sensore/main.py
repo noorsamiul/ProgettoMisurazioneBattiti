@@ -1,6 +1,9 @@
+import wifi
 from machine import I2C, Pin
 from max30102 import MAX30102
 import time
+
+rete = wifi.connetti_wifi()
 
 i2c = I2C(0, sda=Pin(21), scl=Pin(22), freq=400000)
 sensor = MAX30102(i2c=i2c)
