@@ -14,42 +14,27 @@
     <!-- SINISTRA: BPM LIVE -->
     <div class="col-12 col-lg-6">
         <div class="card shadow p-4 text-center">
-
-            <div id="bpm" class="display-6 text-primary mb-3">
-                --- BPM
-            </div>
-
+            <div id="bpm" class="display-6 text-primary mb-3">--- BPM</div>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <span id="timer" class="badge bg-secondary">--</span>
             </div>
-
             <div class="d-flex gap-2 justify-content-center flex-wrap">
-                <button type="button" class="btn btn-success" id="btnAvvio" onclick="start()">Avvio</button>
+                <button type="button" class="btn btn-success" onclick="start()">Avvio</button>
                 <button type="button" class="btn btn-warning" onclick="stop()">Stop</button>
-                <button type="button" class="btn btn-primary d-none" id="btnSalva" onclick="salva()">
-                    💾 Salva
-                </button>
+                <button type="button" class="btn btn-primary d-none" id="btnSalva" onclick="salva()">💾 Salva</button>
             </div>
-
             <div id="salvato" class="alert alert-success mt-3 d-none">
                 ✅ Misurazione salvata in cronologia!
             </div>
-
         </div>
     </div>
 
     <!-- DESTRA: RISULTATO -->
     <div class="col-12 col-lg-6">
         <div class="card shadow p-4">
-
             <h4 class="mb-3">Stato del tuo battito</h4>
-
-            <p id="resultText" class="text-muted">
-                Avvia una misurazione per vedere il risultato.
-            </p>
-
+            <p id="resultText" class="text-muted">Avvia una misurazione per vedere il risultato.</p>
             <h5 id="resultStatus"></h5>
-
             <div id="resultDetails" class="d-none mt-3">
                 <table class="table table-sm table-bordered">
                     <tbody>
@@ -59,93 +44,265 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
 
+    <!-- GRAFICO BPM LIVE -->
+    <div class="col-12">
+        <div class="card shadow p-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="mb-0">
+                    <span id="heartIcon" style="display:inline-block;">❤️</span>
+                    Grafico BPM in tempo reale
+                </h4>
+                <div class="d-flex gap-3 small text-muted">
+                    <span>🟢 Normale (60–100)</span>
+                    <span>🟡 Basso (&lt;60)</span>
+                    <span>🔴 Alto (&gt;100)</span>
+                </div>
+            </div>
+
+            <!-- Stats live sopra il grafico -->
+            <div class="d-flex gap-3 mb-3" id="chartStats" style="display:none!important;">
+                <span class="badge bg-danger fs-6" id="statMax">Max: --</span>
+                <span class="badge bg-primary fs-6" id="statMed">Med: --</span>
+                <span class="badge bg-success fs-6" id="statMin">Min: --</span>
+            </div>
+
+            <canvas id="bpmChart" height="300"></canvas>
         </div>
     </div>
 
 </div>
 
-<!-- SOCKETIO -->
+<style>
+@keyframes heartbeat {
+    0%   { transform: scale(1); }
+    15%  { transform: scale(1.35); }
+    30%  { transform: scale(1); }
+    45%  { transform: scale(1.2); }
+    60%  { transform: scale(1); }
+    100% { transform: scale(1); }
+}
+.beating { animation: heartbeat 0.8s ease-in-out; }
+</style>
+
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 
 <script>
 const socket = io();
-
-// dati dell'ultima misurazione, usati dal bottone Salva
 let ultimaMisurazione = null;
-
-// entra nella stanza utente
-socket.emit("join", {
-    user_id: "{{ g.user.id }}"
-});
+socket.emit("join", { user_id: "{{ g.user.id }}" });
 
 let timer = 0;
 let interval = null;
+
+// ───── GRAFICO ─────
+const MAX_PUNTI = 30;
+const ctx = document.getElementById('bpmChart').getContext('2d');
+
+// Colore dinamico in base al BPM
+function getBpmColor(bpm) {
+    if (bpm < 60)  return 'rgba(255, 193, 7, 1)';   // giallo
+    if (bpm > 100) return 'rgba(220, 53, 69, 1)';   // rosso
+    return 'rgba(25, 135, 84, 1)';                  // verde
+}
+function getBpmBg(bpm) {
+    if (bpm < 60)  return 'rgba(255, 193, 7, 0.15)';
+    if (bpm > 100) return 'rgba(220, 53, 69, 0.15)';
+    return 'rgba(25, 135, 84, 0.15)';
+}
+
+const bpmChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'BPM',
+            data: [],
+            borderColor: 'rgba(25, 135, 84, 1)',
+            backgroundColor: 'rgba(25, 135, 84, 0.15)',
+            borderWidth: 2.5,
+            pointRadius: 4,
+            pointBackgroundColor: [],
+            pointBorderColor: [],
+            fill: true,
+            tension: 0.45
+        }]
+    },
+    options: {
+        animation: { duration: 400 },
+        scales: {
+            x: {
+                title: { display: true, text: 'Campioni' },
+                grid: { color: 'rgba(0,0,0,0.05)' }
+            },
+            y: {
+                min: 35,
+                max: 185,
+                title: { display: true, text: 'BPM' },
+                ticks: { stepSize: 20 },
+                grid: { color: 'rgba(0,0,0,0.05)' }
+            }
+        },
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: c => {
+                        const v = c.parsed.y;
+                        const zona = v < 60 ? '🟡 Basso' : v > 100 ? '🔴 Alto' : '🟢 Normale';
+                        return ` ${v} BPM — ${zona}`;
+                    }
+                }
+            },
+            annotation: {
+                annotations: {
+                    zonaNormaleMin: {
+                        type: 'line',
+                        yMin: 60, yMax: 60,
+                        borderColor: 'rgba(25,135,84,0.5)',
+                        borderWidth: 1.5,
+                        borderDash: [6, 4],
+                        label: {
+                            display: true,
+                            content: '60 BPM (min normale)',
+                            position: 'start',
+                            color: 'rgba(25,135,84,0.8)',
+                            font: { size: 11 },
+                            backgroundColor: 'transparent'
+                        }
+                    },
+                    zonaNormaleMax: {
+                        type: 'line',
+                        yMin: 100, yMax: 100,
+                        borderColor: 'rgba(220,53,69,0.5)',
+                        borderWidth: 1.5,
+                        borderDash: [6, 4],
+                        label: {
+                            display: true,
+                            content: '100 BPM (max normale)',
+                            position: 'start',
+                            color: 'rgba(220,53,69,0.8)',
+                            font: { size: 11 },
+                            backgroundColor: 'transparent'
+                        }
+                    }
+                }
+            }
+        }
+    }
+});
+
+let campione = 0;
+let sessionMax = null, sessionMin = null, sessionSum = 0, sessionCount = 0;
+
+function aggiungiPuntoGrafico(bpm) {
+    if (bpm <= 0) return;
+    campione++;
+
+    // Aggiorna stats
+    if (sessionMax === null || bpm > sessionMax) sessionMax = bpm;
+    if (sessionMin === null || bpm < sessionMin) sessionMin = bpm;
+    sessionSum += bpm;
+    sessionCount++;
+    const med = Math.round(sessionSum / sessionCount);
+
+    document.getElementById('chartStats').style.removeProperty('display');
+    document.getElementById('statMax').innerText = 'Max: ' + sessionMax;
+    document.getElementById('statMed').innerText = 'Med: ' + med;
+    document.getElementById('statMin').innerText = 'Min: ' + sessionMin;
+
+    // Colore punto
+    const color = getBpmColor(bpm);
+    bpmChart.data.datasets[0].pointBackgroundColor.push(color);
+    bpmChart.data.datasets[0].pointBorderColor.push(color);
+
+    // Colore linea/area in base all'ultimo BPM
+    bpmChart.data.datasets[0].borderColor = color;
+    bpmChart.data.datasets[0].backgroundColor = getBpmBg(bpm);
+
+    bpmChart.data.labels.push(campione);
+    bpmChart.data.datasets[0].data.push(bpm);
+
+    if (bpmChart.data.labels.length > MAX_PUNTI) {
+        bpmChart.data.labels.shift();
+        bpmChart.data.datasets[0].data.shift();
+        bpmChart.data.datasets[0].pointBackgroundColor.shift();
+        bpmChart.data.datasets[0].pointBorderColor.shift();
+    }
+
+    bpmChart.update();
+
+    // Animazione cuore
+    const heart = document.getElementById('heartIcon');
+    heart.classList.remove('beating');
+    void heart.offsetWidth; // reflow
+    heart.classList.add('beating');
+}
+
+function resetGrafico() {
+    campione = 0;
+    sessionMax = sessionMin = null;
+    sessionSum = sessionCount = 0;
+    bpmChart.data.labels = [];
+    bpmChart.data.datasets[0].data = [];
+    bpmChart.data.datasets[0].pointBackgroundColor = [];
+    bpmChart.data.datasets[0].pointBorderColor = [];
+    bpmChart.data.datasets[0].borderColor = 'rgba(25,135,84,1)';
+    bpmChart.data.datasets[0].backgroundColor = 'rgba(25,135,84,0.15)';
+    bpmChart.update();
+    document.getElementById('chartStats').style.display = 'none';
+    document.getElementById('statMax').innerText = 'Max: --';
+    document.getElementById('statMed').innerText = 'Med: --';
+    document.getElementById('statMin').innerText = 'Min: --';
+}
 
 // ───── BPM LIVE ─────
 socket.on("bpm_live", function(data) {
     document.getElementById("bpm").innerText = data.bpm > 0 ? data.bpm + " BPM" : "--- BPM";
     document.getElementById("timer").innerText = data.stato;
+    aggiungiPuntoGrafico(data.bpm);
 });
 
 // ───── RISULTATO FINALE ─────
 socket.on("misura_completata", function(data) {
-    clearInterval(interval);
-    interval = null;
-
-    ultimaMisurazione = {
-        bpm_max:  data.bpmMax,
-        bpm_medi: data.bpmMedi,
-        bpm_min:  data.bpmMin
-    };
-
-    document.getElementById("bpm").innerText =
-        `Max: ${data.bpmMax} | Med: ${data.bpmMedi} | Min: ${data.bpmMin}`;
-
-    // Mostra dettagli nella tabella
+    clearInterval(interval); interval = null;
+    ultimaMisurazione = { bpm_max: data.bpmMax, bpm_medi: data.bpmMedi, bpm_min: data.bpmMin };
+    document.getElementById("bpm").innerText = `Max: ${data.bpmMax} | Med: ${data.bpmMedi} | Min: ${data.bpmMin}`;
     document.getElementById("detMax").innerText  = data.bpmMax + " BPM";
     document.getElementById("detMedi").innerText = data.bpmMedi + " BPM";
     document.getElementById("detMin").innerText  = data.bpmMin + " BPM";
     document.getElementById("resultDetails").classList.remove("d-none");
-
     checkBPM(data.bpmMax, data.bpmMedi, data.bpmMin);
-
-    // Mostra bottone Salva, nascondi alert salvato precedente
     document.getElementById("btnSalva").classList.remove("d-none");
     document.getElementById("salvato").classList.add("d-none");
 });
 
-// ───── START MISURAZIONE ─────
+// ───── START ─────
 function start() {
-    // Reset UI
     ultimaMisurazione = null;
     document.getElementById("btnSalva").classList.add("d-none");
     document.getElementById("salvato").classList.add("d-none");
     document.getElementById("resultDetails").classList.add("d-none");
     document.getElementById("resultText").innerText = "Misurazione in corso...";
     document.getElementById("resultStatus").innerText = "";
-
+    resetGrafico();
     fetch("/web/avvia_misurazione", { method: "POST" });
-
     timer = 0;
-
     if (interval) clearInterval(interval);
-
     interval = setInterval(() => {
         timer++;
         document.getElementById("timer").innerText = timer + "s";
-        if (timer >= 20) {
-            clearInterval(interval);
-            interval = null;
-        }
+        if (timer >= 20) { clearInterval(interval); interval = null; }
     }, 1000);
 }
 
-// ───── STOP UI ─────
+// ───── STOP ─────
 function stop() {
-    clearInterval(interval);
-    interval = null;
-
+    clearInterval(interval); interval = null;
     document.getElementById("bpm").innerText = "--- BPM";
     document.getElementById("timer").innerText = "--";
     document.getElementById("btnSalva").classList.add("d-none");
@@ -153,15 +310,12 @@ function stop() {
     document.getElementById("resultText").innerText = "Avvia una misurazione per vedere il risultato.";
     document.getElementById("resultStatus").innerText = "";
     ultimaMisurazione = null;
+    resetGrafico();
 }
 
-// ───── SALVA MISURAZIONE ─────
+// ───── SALVA ─────
 function salva() {
-    if (!ultimaMisurazione) {
-        alert("Nessuna misurazione da salvare.");
-        return;
-    }
-
+    if (!ultimaMisurazione) { alert("Nessuna misurazione da salvare."); return; }
     fetch("/web/salva_misurazione", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -181,23 +335,10 @@ function salva() {
 
 // ───── ANALISI BPM ─────
 function checkBPM(max, med, min) {
-
-    let text = "";
-    let status = "";
-
-    if (med >= 60 && med <= 100) {
-        text = "Battito nella norma";
-        status = "🟢 NORMALE";
-    }
-    else if (med < 60) {
-        text = "Battito troppo basso";
-        status = "🟡 ATTENZIONE";
-    }
-    else {
-        text = "Battito troppo alto";
-        status = "🔴 CRITICO";
-    }
-
+    let text, status;
+    if (med >= 60 && med <= 100)    { text = "Battito nella norma";  status = "🟢 NORMALE"; }
+    else if (med < 60)              { text = "Battito troppo basso"; status = "🟡 ATTENZIONE"; }
+    else                            { text = "Battito troppo alto";  status = "🔴 CRITICO"; }
     document.getElementById("resultText").innerText = text;
     document.getElementById("resultStatus").innerText = status;
 }

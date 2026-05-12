@@ -232,7 +232,7 @@ sensor.set_pulse_amplitude_it(0xFF)
 sensor.set_pulse_amplitude_green(0xFF)
 sensor.set_pulse_amplitude_proximity(0xFF)
 
-print("MAX30102 inizializzato!")
+print("Premi il bottone per attivare la misurazione!")
 
 # ── LOOP PRINCIPALE ───────────────────────────────────────────────────────────
 while True:
