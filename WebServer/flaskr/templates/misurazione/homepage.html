@@ -320,6 +320,7 @@ function aggiungiPuntoGrafico(bpm) {
 }
 
 // ── WATCHDOG ──
+// ── WATCHDOG ──
 let watchdogTimer = null;
 function resetWatchdog() {
     clearTimeout(watchdogTimer);
@@ -327,6 +328,20 @@ function resetWatchdog() {
         document.getElementById("bpm").innerText = "---";
         document.getElementById("timer").innerText = "connessione persa";
         clearInterval(interval); interval = null;
+
+        // Reset grafico
+        bpmChart.data.labels = [];
+        bpmChart.data.datasets[0].data = [];
+        bpmChart.data.datasets[0].pointBackgroundColor = [];
+        bpmChart.data.datasets[0].pointBorderColor = [];
+        bpmChart.data.datasets[0].borderColor = 'rgba(52,208,127,1)';
+        bpmChart.data.datasets[0].backgroundColor = 'rgba(52,208,127,0.08)';
+        bpmChart.update();
+
+        // Nascondi stat e resetta contatori
+        document.getElementById('chartStats').style.setProperty('display', 'none', 'important');
+        campione = 0;
+        sessionMax = null; sessionMin = null; sessionSum = 0; sessionCount = 0;
     }, 5000);
 }
 
