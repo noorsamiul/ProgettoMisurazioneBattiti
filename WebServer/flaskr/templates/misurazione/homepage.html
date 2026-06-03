@@ -152,11 +152,11 @@
             <div class="stato-badge" id="timer">in attesa...</div>
 
             <div class="d-flex gap-2 justify-content-center flex-wrap mt-1">
-                <button class="btn-save d-none" id="btnSalva" onclick="salva()">💾 Salva</button>
-                <a href="{{ url_for('homepage') }}" class="btn-home d-none" id="btnHome">🏠 Home</a>
+                <button class="btn-save d-none" id="btnSalva" onclick="salva()">Salva</button>
+                <a href="{{ url_for('homepage') }}" class="btn-home d-none" id="btnHome">Home</a>
             </div>
 
-            <div class="alert-saved d-none" id="salvato">✅ Misurazione salvata!</div>
+            <div class="alert-saved d-none" id="salvato">Misurazione salvata!</div>
 
         </div>
     </div>
@@ -168,13 +168,13 @@
         <div class="card p-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div style="display:flex; align-items:center; gap:0.5rem; font-weight:600;">
-                    <span id="heartIcon" style="display:inline-block; font-size:1.2rem;">❤️</span>
+                    <span id="heartIcon" style="display:inline-block; font-size:1.2rem;"></span>
                     Grafico BPM in tempo reale
                 </div>
                 <div class="d-flex gap-3 chart-legend">
-                    <span>🟢 Normale (60–100)</span>
-                    <span>🟡 Basso (&lt;60)</span>
-                    <span>🔴 Alto (&gt;100)</span>
+                    <span> Normale (60–100)</span>
+                    <span> Basso (&lt;60)</span>
+                    <span> Alto (&gt;100)</span>
                 </div>
             </div>
 
@@ -258,7 +258,7 @@ const bpmChart = new Chart(ctx, {
                 callbacks: {
                     label: c => {
                         const v = c.parsed.y;
-                        const z = v < 60 ? '🟡 Basso' : v > 100 ? '🔴 Alto' : '🟢 Normale';
+                        const z = v < 60 ? ' Basso' : v > 100 ? ' Alto' : ' Normale';
                         return ` ${v} BPM — ${z}`;
                     }
                 }
