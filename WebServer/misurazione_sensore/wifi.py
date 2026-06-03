@@ -2,10 +2,9 @@ import network
 import time
 
 def connetti_wifi():
-    ssid = "VODAFONE-E10336597"
-    password = "dh6EFAeNPaeLJpeM"
-    # ssid = "BancoSperimentale2G"
-    # password = "Galileo19"
+
+    ssid = "BancoSperimentale2G"
+    password = "Galileo19"
 
     wlan = network.WLAN(network.STA_IF)
 

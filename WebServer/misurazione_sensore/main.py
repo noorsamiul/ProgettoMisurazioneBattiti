@@ -6,8 +6,8 @@ from machine import I2C, Pin
 from max30102 import MAX30102
 
 # ── CONFIGURAZIONE ─────────────────────────────────────────────────────────────
-# FLASK_URL = "http://192.168.5.47:5000"
-FLASK_URL = "http://192.168.1.33:5000"
+FLASK_URL = "http://192.168.5.47:5000"
+
 
 API_TOKEN = "fd67dc813804cec44189906a6f75bd90a2f7219a8a915b224382cef0fe3cf6a0"
 
@@ -148,7 +148,7 @@ def misura_bpm(sensor):
 
         now = time.ticks_ms()
 
-        # rilevazione battito
+        #region rilevazione battito
         if ir > (avg + 60) and time.ticks_diff(now, last_beat_time) > 600:
 
             if last_beat_time != 0:

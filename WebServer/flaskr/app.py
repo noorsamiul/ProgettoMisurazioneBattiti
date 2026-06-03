@@ -168,7 +168,7 @@ def profilo():
     )
 
 # ─────────────────────────────
-#regionESP32 API
+#region ESP32 API
 # ─────────────────────────────
 
 @app.route("/web/avvia_misurazione", methods=["POST"])
