@@ -14,7 +14,7 @@ from db.models.misurazione import Misurazione
 from auth import bp as auth_bp
 
 # ─────────────────────────────
-# APP INIT
+#region APP INIT
 # ─────────────────────────────
 
 app = Flask(
@@ -33,7 +33,7 @@ with app.app_context():
     Base.metadata.create_all(bind=engine)
 
 # ─────────────────────────────
-# COMANDI ESP32
+#region COMANDI ESP32
 # ─────────────────────────────
 
 _comandi = {}
@@ -51,7 +51,7 @@ def get_e_reset_comando(user_id):
         return cmd
 
 # ─────────────────────────────
-# AUTH ESP32 TOKEN
+#region AUTH ESP32 TOKEN
 # ─────────────────────────────
 
 def autentica_token():
@@ -65,7 +65,7 @@ def autentica_token():
         return User.get_by_token(db, token)
 
 # ─────────────────────────────
-# SESSION USER
+#region SESSION USER
 # ─────────────────────────────
 
 @app.before_request
@@ -78,7 +78,7 @@ def load_user():
         g.user = None
 
 # ─────────────────────────────
-# SOCKET
+#region SOCKET
 # ─────────────────────────────
 
 @socketio.on("join")
@@ -86,7 +86,7 @@ def on_join(data):
     join_room(str(data.get("user_id")))
 
 # ─────────────────────────────
-# ROUTES BASE
+#region ROUTES BASE
 # ─────────────────────────────
 
 @app.route("/")
@@ -106,7 +106,7 @@ def homepage():
     )
 
 # ─────────────────────────────
-# CRONOLOGIA
+#region CRONOLOGIA
 # ─────────────────────────────
 
 @app.route("/cronologia")
@@ -154,7 +154,7 @@ def delete_misurazione(id_misurazione):
     return redirect(url_for("cronologia"))
 
 # ─────────────────────────────
-# PROFILO
+#region PROFILO
 # ─────────────────────────────
 
 @app.route("/profilo")
@@ -168,7 +168,7 @@ def profilo():
     )
 
 # ─────────────────────────────
-# ESP32 API
+#regionESP32 API
 # ─────────────────────────────
 
 @app.route("/web/avvia_misurazione", methods=["POST"])
@@ -194,7 +194,7 @@ def comando():
     return jsonify({"comando": get_e_reset_comando(user.id)})
 
 # ─────────────────────────────
-# BPM LIVE
+#region BPM LIVE
 # ─────────────────────────────
 
 @app.route("/api/bpm_live", methods=["POST"])
@@ -241,7 +241,7 @@ def misura():
     return jsonify({"ok": True})
 
 # ─────────────────────────────
-# SALVA MISURAZIONE (da web)
+#region SALVA MISURAZIONE (da web)
 # ─────────────────────────────
 
 @app.route("/web/salva_misurazione", methods=["POST"])
@@ -267,7 +267,7 @@ def salva_misurazione():
 
 
 # ─────────────────────────────
-# RUN
+#region RUN
 # ─────────────────────────────
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ from db.models.user import User
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
-# ── LOGIN ─────────────────────────────────────────────────────────────────────
+#region LOGIN 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if 'username' in session:
@@ -31,7 +31,7 @@ def login():
     return render_template('auth/login.html', error=error, show_modal=error)
 
 
-# ── REGISTER ──────────────────────────────────────────────────────────────────
+#region REGISTER 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if 'username' in session:
@@ -70,7 +70,7 @@ def register():
     return render_template('auth/register.html', error=error, success=success)
 
 
-# ── LOGOUT ────────────────────────────────────────────────────────────────────
+#region LOGOUT 
 @bp.route('/logout')
 def logout():
     session.pop('username', None)

@@ -20,10 +20,16 @@ SECONDI_SENZA_DITO_PER_STOP = 3
 
 DURATA_MISURAZIONE = 30
 
-# ── BOTTONE KY-004 ─────────────────────────────────────────────────────────────
+#region BOTTONE KY-004 
 button = Pin(18, Pin.IN, Pin.PULL_UP)
 
-# ── FUNZIONI API ───────────────────────────────────────────────────────────────
+
+
+
+
+
+
+#region FUNZIONI API 
 def get_comando():
     try:
         r = urequests.get(FLASK_URL + "/api/comando", headers=HEADERS)
@@ -78,7 +84,7 @@ def invia_risultato(bpm_medi, bpm_max, bpm_min):
         print("Errore invio risultato:", e)
 
 
-# ── MISURAZIONE BPM ────────────────────────────────────────────────────────────
+#region MISURAZIONE BPM 
 def misura_bpm(sensor):
 
     history = []
@@ -104,7 +110,7 @@ def misura_bpm(sensor):
 
         ir = sensor.pop_ir_from_storage()
 
-        # ── DITO ASSENTE ───────────────────────────────────────────────
+        #region DITO ASSENTE 
         if ir < 3000:
 
             tempo_senza_dito += 10
@@ -116,7 +122,7 @@ def misura_bpm(sensor):
             time.sleep_ms(10)
             continue
 
-        # ── DITO PRESENTE ─────────────────────────────────────────────
+        #region DITO PRESENTE 
         tempo_senza_dito = 0
 
         if not finger_on:
@@ -127,10 +133,10 @@ def misura_bpm(sensor):
 
             start_time = time.ticks_ms()
 
-        # ── STOP DOPO 20 SECONDI ───────────────────────────────
+        #region STOP DOPO 30 SECONDI
         if finger_on:
             if time.ticks_diff(time.ticks_ms(), start_time) >= (DURATA_MISURAZIONE * 1000):
-                print("20 secondi terminati.")
+                print("30 secondi terminati.")
                 break
 
         history.append(ir)
@@ -175,7 +181,7 @@ def misura_bpm(sensor):
 
         time.sleep_ms(10)
 
-    # ── RISULTATO FINALE ─────────────────────────────────────────────
+    #region RISULTATO FINALE 
     if len(bpm_list) < 4:
         invia_bpm_live(0, "dati insufficienti")
         return None
@@ -190,10 +196,14 @@ def misura_bpm(sensor):
     return bpm_medi, bpm_max, bpm_min
 
 
-# ── WIFI ──────────────────────────────────────────────────────────────────────
+#region WIFI 
 rete = wifi.connetti_wifi()
 
-# ── SENSOR ────────────────────────────────────────────────────────────────────
+
+
+
+
+#region SENSOR
 i2c = I2C(0, sda=Pin(21), scl=Pin(22), freq=400000)
 
 sensor = MAX30102(i2c=i2c)
@@ -206,7 +216,7 @@ sensor.set_pulse_amplitude_proximity(0xFF)
 
 print("Premi il bottone per attivare la misurazione!")
 
-# ── LOOP PRINCIPALE ───────────────────────────────────────────────────────────
+#region LOOP PRINCIPALE 
 while True:
 
     comando = get_comando()
